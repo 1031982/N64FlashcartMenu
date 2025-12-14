@@ -1,4 +1,4 @@
-# Trigger the action on push to main
+# Trigger the action
 on:
   pull_request:
   push:
@@ -22,7 +22,7 @@ jobs:
   publish-docs:
     environment:
       name: github-pages
-      url: menu.summercart64.dev # url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
