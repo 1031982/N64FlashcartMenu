@@ -1,8 +1,10 @@
 # Trigger the action on push to main
 on:
+  pull_request:
   push:
     branches:
       - main
+      - develop
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -43,6 +45,8 @@ jobs:
       with:
         # Upload entire docfx site folder
         path: '_site'
+
     - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
       id: deployment
       uses: actions/deploy-pages@v4
