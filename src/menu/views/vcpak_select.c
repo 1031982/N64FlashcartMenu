@@ -148,7 +148,6 @@ static void process(menu_t *menu) {
 
             // Set up load state
             menu->load.vcpak_enabled = true;
-            menu->load.vcpak_create_new = true;
             strncpy(menu->load.vcpak_selected, new_pak_full_path,
                     sizeof(menu->load.vcpak_selected) - 1);
 
@@ -163,7 +162,6 @@ static void process(menu_t *menu) {
         } else if (sel >= 0 && sel < pak_list.count) {
             // Selected existing pak
             menu->load.vcpak_enabled = true;
-            menu->load.vcpak_create_new = false;
             strncpy(menu->load.vcpak_selected,
                     pak_list.entries[sel].full_path,
                     sizeof(menu->load.vcpak_selected) - 1);
@@ -339,7 +337,6 @@ void view_vcpak_select_init(menu_t *menu) {
 
     // Initialize vcpak load state
     menu->load.vcpak_enabled = false;
-    menu->load.vcpak_create_new = false;
     menu->load.vcpak_selected[0] = '\0';
     menu->load.vcpak_no_physical = false;
 

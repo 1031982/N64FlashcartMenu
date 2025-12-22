@@ -140,7 +140,6 @@ typedef struct {
         // Virtual Controller Pak fields
         bool vcpak_enabled;             /**< Game uses cpak and user selected a virtual pak */
         char vcpak_selected[256];       /**< Selected pak file full path */
-        bool vcpak_create_new;          /**< Create new empty pak instead of restore */
         bool vcpak_no_physical;         /**< No physical cpak detected (warning shown) */
     } load;
 

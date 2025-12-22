@@ -564,14 +564,14 @@ static void load (menu_t *menu) {
     if (menu->load.vcpak_enabled) {
         debugf("Load ROM: Virtual Controller Pak enabled\n");
 
-        // Restore pak contents to physical device (unless creating new empty pak)
-        if (!menu->load.vcpak_create_new) {
-            debugf("Load ROM: Restoring pak from %s\n", menu->load.vcpak_selected);
-            vcpak_err_t pak_err = vcpak_restore_to_physical(menu->load.vcpak_selected, 0);
-            if (pak_err != VCPAK_OK) {
-                debugf("Load ROM: Warning - pak restore failed with error %d\n", pak_err);
-                // Continue anyway - user was warned if no physical pak
-            }
+        // Restore pak contents to physical device
+        // For new paks, this writes the empty pak to clear the physical device
+        // For existing paks, this restores previously saved data
+        debugf("Load ROM: Restoring pak from %s\n", menu->load.vcpak_selected);
+        vcpak_err_t pak_err = vcpak_restore_to_physical(menu->load.vcpak_selected, 0);
+        if (pak_err != VCPAK_OK) {
+            debugf("Load ROM: Warning - pak restore failed with error %d\n", pak_err);
+            // Continue anyway - user was warned if no physical pak
         }
 
         // Save dirty state so we can recover if power is lost
