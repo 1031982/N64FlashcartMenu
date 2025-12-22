@@ -11,6 +11,7 @@
 #include <libdragon.h>
 
 #include "actions.h"
+#include "bgm.h"
 #include "boot/boot.h"
 #include "flashcart/flashcart.h"
 #include "fonts.h"
@@ -129,6 +130,10 @@ static void menu_init (boot_params_t *boot_params) {
 
     sound_use_sfx(menu->settings.soundfx_enabled);
 
+    if (menu->settings.bgm_enabled) {
+        bgm_load_and_play(menu->storage_prefix);
+    }
+
     menu->browser.directory = path_init(menu->storage_prefix, menu->settings.default_directory);
     if (!directory_exists(path_get(menu->browser.directory))) {
         path_free(menu->browser.directory);
@@ -159,6 +164,7 @@ static void menu_deinit (menu_t *menu) {
 
     display_close();
 
+    bgm_deinit();
     sound_deinit();
 
     rdpq_close();
@@ -260,6 +266,8 @@ void menu_run (boot_params_t *boot_params) {
         }
 
         sound_poll();
+
+        bgm_poll();
 
         png_decoder_poll();
 

@@ -41,6 +41,7 @@ SRCS = \
 	libs/miniz/miniz_zip.c \
 	libs/miniz/miniz.c \
 	menu/actions.c \
+	menu/bgm.c \
 	menu/bookkeeping.c \
 	menu/cart_load.c \
 	menu/datel_codes.c \

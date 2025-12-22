@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include "../bgm.h"
 #include "../sound.h"
 #include "../settings.h"
 #include "views.h"
@@ -75,6 +76,11 @@ static void set_show_browser_rom_tags_type (menu_t *menu, void *arg) {
 
 static void set_bgm_enabled_type (menu_t *menu, void *arg) {
     menu->settings.bgm_enabled = (bool)(uintptr_t)(arg);
+    if (menu->settings.bgm_enabled) {
+        bgm_load_and_play(menu->storage_prefix);
+    } else {
+        bgm_stop();
+    }
     settings_save(&menu->settings);
 }
 

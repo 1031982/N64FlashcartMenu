@@ -1,3 +1,4 @@
+#include "../bgm.h"
 #include "../mp3_player.h"
 #include "../sound.h"
 #include "views.h"
@@ -124,11 +125,16 @@ static void draw (menu_t *menu, surface_t *d) {
 static void deinit (void) {
     sound_init_default();
     mp3player_deinit();
+    // Resume background music after exiting music player
+    bgm_resume();
 }
 
 
 void view_music_player_init (menu_t *menu) {
     mp3player_err_t err;
+
+    // Pause background music while using music player
+    bgm_pause();
 
     err = mp3player_init();
     if (err != MP3PLAYER_OK) {

@@ -102,7 +102,7 @@ void settings_save (settings_t *settings) {
     /* Beta feature flags, they should not save until production ready! */
     // mini_set_bool(ini, "menu", "show_browser_file_extensions", settings->show_browser_file_extensions);
     // mini_set_bool(ini, "menu", "show_browser_rom_tags", settings->show_browser_rom_tags);
-    // mini_set_bool(ini, "menu_beta_flag", "bgm_enabled", settings->bgm_enabled);
+    mini_set_bool(ini, "menu_beta_flag", "bgm_enabled", settings->bgm_enabled);
     // mini_set_bool(ini, "menu_beta_flag", "rumble_enabled", settings->rumble_enabled);
 
     mini_save(ini, MINI_FLAGS_SKIP_EMPTY_GROUPS);
