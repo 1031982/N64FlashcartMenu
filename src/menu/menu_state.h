@@ -47,7 +47,9 @@ typedef enum {
     MENU_MODE_FAVORITE,
     MENU_MODE_HISTORY,
     MENU_MODE_DATEL_CODE_EDITOR,
-    MENU_MODE_EXTRACT_FILE
+    MENU_MODE_EXTRACT_FILE,
+    MENU_MODE_VCPAK_SELECT,
+    MENU_MODE_VCPAK_RECOVERY
 } menu_mode_t;
 
 /** @brief File entry type enumeration */
@@ -134,6 +136,12 @@ typedef struct {
         int32_t load_history_id;
         int32_t load_favorite_id;
         bool combined_disk_rom;
+
+        // Virtual Controller Pak fields
+        bool vcpak_enabled;             /**< Game uses cpak and user selected a virtual pak */
+        char vcpak_selected[256];       /**< Selected pak file full path */
+        bool vcpak_create_new;          /**< Create new empty pak instead of restore */
+        bool vcpak_no_physical;         /**< No physical cpak detected (warning shown) */
     } load;
 
     struct {
