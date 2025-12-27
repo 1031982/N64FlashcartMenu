@@ -30,6 +30,8 @@ static int scroll_offset;
 static bool show_no_cpak_warning;
 static bool show_delete_confirm;
 static bool show_creating_pak;
+static bool show_create_error;
+static char create_error_message[128];
 static char new_pak_filename[64];
 static char new_pak_full_path[256];
 
@@ -39,6 +41,8 @@ static void reset_state(void) {
     show_no_cpak_warning = false;
     show_delete_confirm = false;
     show_creating_pak = false;
+    show_create_error = false;
+    create_error_message[0] = '\0';
     new_pak_filename[0] = '\0';
     new_pak_full_path[0] = '\0';
 }
@@ -77,6 +81,15 @@ static void process(menu_t *menu) {
         if (menu->actions.enter || menu->actions.back) {
             sound_play_effect(SFX_ENTER);
             show_no_cpak_warning = false;
+        }
+        return;
+    }
+
+    // Handle create error dialog
+    if (show_create_error) {
+        if (menu->actions.enter || menu->actions.back) {
+            sound_play_effect(SFX_EXIT);
+            show_create_error = false;
         }
         return;
     }
@@ -140,16 +153,31 @@ static void process(menu_t *menu) {
                      "%s/%s", game_dir, new_pak_filename);
 
             // Ensure directory exists
-            vcpak_ensure_game_directory(menu->storage_prefix,
+            vcpak_err_t dir_err = vcpak_ensure_game_directory(menu->storage_prefix,
                                         menu->load.rom_info.game_code);
+            if (dir_err != VCPAK_OK) {
+                show_creating_pak = false;
+                show_create_error = true;
+                snprintf(create_error_message, sizeof(create_error_message),
+                         "Failed to create pak directory.\nError code: %d", dir_err);
+                return;
+            }
 
             // Create empty pak file
-            vcpak_create_empty(new_pak_full_path);
+            vcpak_err_t create_err = vcpak_create_empty(new_pak_full_path);
+            if (create_err != VCPAK_OK) {
+                show_creating_pak = false;
+                show_create_error = true;
+                snprintf(create_error_message, sizeof(create_error_message),
+                         "Failed to create pak file.\nError: %d", create_err);
+                return;
+            }
 
             // Set up load state
             menu->load.vcpak_enabled = true;
             strncpy(menu->load.vcpak_selected, new_pak_full_path,
                     sizeof(menu->load.vcpak_selected) - 1);
+            menu->load.vcpak_selected[sizeof(menu->load.vcpak_selected) - 1] = '\0';
 
             // Save as last used
             rom_config_setting_set_last_cpak(menu->load.rom_path,
@@ -325,6 +353,15 @@ static void draw(menu_t *menu, surface_t *d) {
             "Creating new Controller Pak...\n\n"
             "%.50s",
             new_pak_filename
+        );
+    }
+
+    if (show_create_error) {
+        ui_components_messagebox_draw(
+            "ERROR: Could not create pak\n\n"
+            "%s\n\n"
+            "Press A or B to continue.",
+            create_error_message
         );
     }
 

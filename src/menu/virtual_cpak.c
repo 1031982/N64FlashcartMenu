@@ -16,6 +16,8 @@
 #include "utils/fs.h"
 #include "utils/cpakfs_utils.h"
 
+/* Global to capture last errno for debugging */
+int vcpak_last_errno = 0;
 
 /*
  * Directory Management
@@ -23,10 +25,16 @@
 
 void vcpak_get_game_directory(const char *storage_prefix, const char *game_code,
                                char *out_path, size_t out_size) {
+    // Game code is only 4 bytes in ROM header, not null-terminated
+    // Make a safe copy
+    char safe_code[5];
+    memcpy(safe_code, game_code, 4);
+    safe_code[4] = '\0';
+
     snprintf(out_path, out_size, "%s%s/%s",
              storage_prefix ? storage_prefix : "",
              VCPAK_SAVES_BASE_DIR,
-             game_code);
+             safe_code);
 }
 
 vcpak_err_t vcpak_ensure_game_directory(const char *storage_prefix, const char *game_code) {
@@ -336,8 +344,9 @@ vcpak_err_t vcpak_generate_filename(const char *storage_prefix, const char *game
 
     // Clean up the game title for use in filename
     // Remove spaces and special characters
+    // Note: ROM titles are fixed 20-byte fields, not always null-terminated
     int j = 0;
-    for (int i = 0; game_title[i] != '\0' && j < 20; i++) {
+    for (int i = 0; i < 20 && game_title[i] != '\0' && j < 20; i++) {
         char c = game_title[i];
         if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
             (c >= '0' && c <= '9')) {

@@ -570,8 +570,37 @@ static void load (menu_t *menu) {
         debugf("Load ROM: Restoring pak from %s\n", menu->load.vcpak_selected);
         vcpak_err_t pak_err = vcpak_restore_to_physical(menu->load.vcpak_selected, 0);
         if (pak_err != VCPAK_OK) {
-            debugf("Load ROM: Warning - pak restore failed with error %d\n", pak_err);
-            // Continue anyway - user was warned if no physical pak
+            debugf("Load ROM: pak restore failed with error %d\n", pak_err);
+            if (pak_err == VCPAK_ERR_NO_CPAK) {
+                // No physical pak - user was already warned, continue anyway
+                debugf("Load ROM: No physical pak detected, continuing without restore\n");
+            } else {
+                // Serious error - pak file missing, I/O error, or corruption
+                // Do NOT boot the game as the physical pak contains stale data
+                char *err_msg;
+                switch (pak_err) {
+                    case VCPAK_ERR_FILE_NOT_FOUND:
+                        err_msg = "Controller Pak file not found.\nThe pak may not have been created.";
+                        break;
+                    case VCPAK_ERR_IO:
+                        err_msg = "I/O error reading Controller Pak file.";
+                        break;
+                    case VCPAK_ERR_CORRUPTED:
+                        err_msg = "Controller Pak file is corrupted.";
+                        break;
+                    case VCPAK_ERR_ALLOC:
+                        err_msg = "Out of memory restoring Controller Pak.";
+                        break;
+                    case VCPAK_ERR_TOO_LARGE:
+                        err_msg = "Controller Pak file too large for device.";
+                        break;
+                    default:
+                        err_msg = "Failed to restore Controller Pak.";
+                        break;
+                }
+                menu_show_error(menu, err_msg);
+                return;
+            }
         }
 
         // Save dirty state so we can recover if power is lost

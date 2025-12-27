@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 /** @brief Base directory for virtual cpak saves on SD card */
-#define VCPAK_SAVES_BASE_DIR    "/cpak_saves"
+#define VCPAK_SAVES_BASE_DIR    "cpak_saves"
 
 /** @brief Filename for dirty state tracking file */
 #define VCPAK_STATE_FILENAME    "vcpak_state.dat"
@@ -214,5 +214,7 @@ vcpak_err_t vcpak_state_clear(const char *storage_prefix);
  */
 bool vcpak_state_is_dirty(const char *storage_prefix);
 
+/** @brief Last errno value from failed vcpak operation (for debugging) */
+extern int vcpak_last_errno;
 
 #endif /* VIRTUAL_CPAK_H__ */
