@@ -17,7 +17,7 @@
 #include <minimp3/minimp3.h>
 
 #define SEEK_PREDECODE_FRAMES   (5)
-#define MENU_DIRECTORY          "/menu"
+#define MENU_DIRECTORY          "menu"
 #define MP3_BUFFER_THRESHOLD    (2048)  // Minimum buffer before refill
 
 /**
@@ -288,6 +288,7 @@ bgm_err_t bgm_load_and_play(const char *storage_prefix) {
     if (bgm == NULL) {
         bgm_err_t err = bgm_init();
         if (err != BGM_OK) {
+            debugf("BGM: Failed to initialize\n");
             return err;
         }
     }
@@ -296,15 +297,21 @@ bgm_err_t bgm_load_and_play(const char *storage_prefix) {
     char path[256];
     snprintf(path, sizeof(path), "%s%s/%s", storage_prefix, MENU_DIRECTORY, BGM_FILE);
 
+    debugf("BGM: Looking for file at: %s\n", path);
+
     // Check if file exists
     if (!file_exists(path)) {
+        debugf("BGM: File not found\n");
         return BGM_ERR_NO_FILE;
     }
 
     bgm_err_t err = bgm_load(path);
     if (err != BGM_OK) {
+        debugf("BGM: Failed to load file (error %d)\n", err);
         return err;
     }
+
+    debugf("BGM: Loaded successfully, starting playback\n");
 
     // Start playback
     bgm->paused = false;

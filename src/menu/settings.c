@@ -30,7 +30,7 @@ static settings_t init = {
     /* Beta feature flags (should always init to default) */
     .show_browser_file_extensions = true,
     .show_browser_rom_tags = true,
-    .bgm_enabled = false,
+    .bgm_enabled = true,
     .rumble_enabled = false,
 };
 
@@ -59,7 +59,8 @@ void settings_load (settings_t *settings) {
     settings->use_saves_folder = mini_get_bool(ini, "menu", "use_saves_folder", init.use_saves_folder);
     settings->show_saves_folder = mini_get_bool(ini, "menu", "show_saves_folder", init.show_saves_folder);
     settings->soundfx_enabled = mini_get_bool(ini, "menu", "soundfx_enabled", init.soundfx_enabled);
-    
+    settings->bgm_enabled = mini_get_bool(ini, "menu", "bgm_enabled", init.bgm_enabled);
+
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
     settings->rom_autoload_enabled = mini_get_bool(ini, "menu", "autoload_rom_enabled", init.rom_autoload_enabled);
     settings->rom_autoload_path = strdup(mini_get_string(ini, "autoload", "rom_path", init.rom_autoload_path));
@@ -71,7 +72,6 @@ void settings_load (settings_t *settings) {
     /* Beta feature flags, they might not be in the file */
     settings->show_browser_file_extensions = mini_get_bool(ini, "menu", "show_browser_file_extensions", init.show_browser_file_extensions);
     settings->show_browser_rom_tags = mini_get_bool(ini, "menu", "show_browser_rom_tags", init.show_browser_rom_tags);
-    settings->bgm_enabled = mini_get_bool(ini, "menu_beta_flag", "bgm_enabled", init.bgm_enabled);
     settings->rumble_enabled = mini_get_bool(ini, "menu_beta_flag", "rumble_enabled", init.rumble_enabled);
 
     mini_free(ini);
@@ -90,6 +90,7 @@ void settings_save (settings_t *settings) {
     mini_set_bool(ini, "menu", "use_saves_folder", settings->use_saves_folder);
     mini_set_bool(ini, "menu", "show_saves_folder", settings->show_saves_folder);
     mini_set_bool(ini, "menu", "soundfx_enabled", settings->soundfx_enabled);
+    mini_set_bool(ini, "menu", "bgm_enabled", settings->bgm_enabled);
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
     mini_set_bool(ini, "menu", "autoload_rom_enabled", settings->rom_autoload_enabled);
     mini_set_string(ini, "autoload", "rom_path", settings->rom_autoload_path);
@@ -102,7 +103,6 @@ void settings_save (settings_t *settings) {
     /* Beta feature flags, they should not save until production ready! */
     // mini_set_bool(ini, "menu", "show_browser_file_extensions", settings->show_browser_file_extensions);
     // mini_set_bool(ini, "menu", "show_browser_rom_tags", settings->show_browser_rom_tags);
-    mini_set_bool(ini, "menu_beta_flag", "bgm_enabled", settings->bgm_enabled);
     // mini_set_bool(ini, "menu_beta_flag", "rumble_enabled", settings->rumble_enabled);
 
     mini_save(ini, MINI_FLAGS_SKIP_EMPTY_GROUPS);

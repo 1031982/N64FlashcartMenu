@@ -45,6 +45,16 @@ static void set_soundfx_enabled_type (menu_t *menu, void *arg) {
     settings_save(&menu->settings);
 }
 
+static void set_bgm_enabled_type (menu_t *menu, void *arg) {
+    menu->settings.bgm_enabled = (bool)(uintptr_t)(arg);
+    if (menu->settings.bgm_enabled) {
+        bgm_load_and_play(menu->storage_prefix);
+    } else {
+        bgm_stop();
+    }
+    settings_save(&menu->settings);
+}
+
 #ifndef FEATURE_AUTOLOAD_ROM_ENABLED
 static void set_use_rom_fast_reboot_enabled_type (menu_t *menu, void *arg) {
     menu->settings.rom_fast_reboot_enabled = (bool)(uintptr_t)(arg);
@@ -71,16 +81,6 @@ static void set_show_browser_file_extensions_type(menu_t *menu, void *arg) {
 
 static void set_show_browser_rom_tags_type (menu_t *menu, void *arg) {
     menu->settings.show_browser_rom_tags = (bool)(uintptr_t)(arg);
-    settings_save(&menu->settings);
-}
-
-static void set_bgm_enabled_type (menu_t *menu, void *arg) {
-    menu->settings.bgm_enabled = (bool)(uintptr_t)(arg);
-    if (menu->settings.bgm_enabled) {
-        bgm_load_and_play(menu->storage_prefix);
-    } else {
-        bgm_stop();
-    }
     settings_save(&menu->settings);
 }
 
@@ -157,6 +157,18 @@ static component_context_menu_t set_show_saves_folder_type_context_menu = {
     COMPONENT_CONTEXT_MENU_LIST_END,
 }};
 
+static int get_bgm_enabled_current_selection (menu_t *menu) {
+    return menu->settings.bgm_enabled ? 0 : 1;
+}
+
+static component_context_menu_t set_bgm_enabled_type_context_menu = {
+    .get_default_selection = get_bgm_enabled_current_selection,
+    .list = {
+        {.text = "On", .action = set_bgm_enabled_type, .arg = (void *)(uintptr_t)(true) },
+        {.text = "Off", .action = set_bgm_enabled_type, .arg = (void *)(uintptr_t)(false) },
+    COMPONENT_CONTEXT_MENU_LIST_END,
+}};
+
 #ifndef FEATURE_AUTOLOAD_ROM_ENABLED
 static int get_use_rom_fast_reboot_current_selection (menu_t *menu) {
     return menu->settings.rom_fast_reboot_enabled ? 0 : 1;
@@ -220,18 +232,6 @@ static component_context_menu_t set_show_browser_rom_tags_context_menu = {
     COMPONENT_CONTEXT_MENU_LIST_END,
 }};
 
-static int get_bgm_enabled_current_selection (menu_t *menu) {
-    return menu->settings.bgm_enabled ? 0 : 1;
-}
-
-static component_context_menu_t set_bgm_enabled_type_context_menu = {
-    .get_default_selection = get_bgm_enabled_current_selection,
-    .list = {
-        {.text = "On", .action = set_bgm_enabled_type, .arg = (void *)(uintptr_t)(true) },
-        {.text = "Off", .action = set_bgm_enabled_type, .arg = (void *)(uintptr_t)(false) },
-    COMPONENT_CONTEXT_MENU_LIST_END,
-}};
-
 static int get_rumble_enabled_current_selection (menu_t *menu) {
     return menu->settings.rumble_enabled ? 0 : 1;
 }
@@ -255,12 +255,12 @@ static component_context_menu_t options_context_menu = { .list = {
 #else
     { .text = "Fast Reboot ROM", .submenu = &set_use_rom_fast_reboot_context_menu },
 #endif
+    { .text = "Background Music", .submenu = &set_bgm_enabled_type_context_menu },
 #ifdef BETA_SETTINGS
     { .text = "PAL60 Mode", .submenu = &set_pal60_type_context_menu },
     { .text = "PAL60 Compatibility", .submenu = &set_pal60_mod_compatibility_type_context_menu },
     { .text = "Hide ROM Extensions", .submenu = &set_show_browser_file_extensions_context_menu },
     { .text = "Hide ROM Tags", .submenu = &set_show_browser_rom_tags_context_menu },
-    { .text = "Background Music", .submenu = &set_bgm_enabled_type_context_menu },
     { .text = "Rumble Feedback", .submenu = &set_rumble_enabled_type_context_menu },
     // { .text = "Restore Defaults", .action = set_use_default_settings },
 #endif
@@ -325,12 +325,12 @@ static void draw (menu_t *menu, surface_t *d) {
 #else
         "     Fast Reboot ROM   : %s\n"
 #endif
+        "     Background Music  : %s\n"
 #ifdef BETA_SETTINGS
         "*    PAL60 Mode        : %s\n"
         "*    PAL60 Mod Compat  : %s\n"
         "     Hide ROM Extension: %s\n"
         "     Hide ROM Tags     : %s\n"
-        "     Background Music  : %s\n"
         "     Rumble Feedback   : %s\n"
         "\n\n"
         "Note: Certain settings have the following caveats:\n"
@@ -344,17 +344,17 @@ static void draw (menu_t *menu, surface_t *d) {
         format_switch(menu->settings.show_saves_folder),
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
         format_switch(menu->settings.rom_autoload_enabled),
-        format_switch(menu->settings.loading_progress_bar_enabled)
+        format_switch(menu->settings.loading_progress_bar_enabled),
 #else
-        format_switch(menu->settings.rom_fast_reboot_enabled)
+        format_switch(menu->settings.rom_fast_reboot_enabled),
 #endif
+        format_switch(menu->settings.bgm_enabled)
 #ifdef BETA_SETTINGS
         ,
         format_switch(menu->settings.pal60_enabled),
         format_switch(menu->settings.pal60_compatibility_mode),
         format_switch(menu->settings.show_browser_file_extensions),
         format_switch(menu->settings.show_browser_rom_tags),
-        format_switch(menu->settings.bgm_enabled),
         format_switch(menu->settings.rumble_enabled)
 #endif
     );

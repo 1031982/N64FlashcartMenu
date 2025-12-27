@@ -8,7 +8,7 @@ The menu supports playing background music while browsing. When enabled, the mus
 ### Setup
 1. Create an MP3 file named `bg.mp3`
 2. Place it in the `/menu/` folder on your SD card (e.g., `sd:/menu/bg.mp3`)
-3. Enable the "Background Music" option in the menu settings (requires BETA_SETTINGS to be enabled)
+3. The "Background Music" option is enabled by default in the menu settings
 
 ### Audio requirements
 - **Format:** MP3 (MPEG-1 Audio Layer III)
