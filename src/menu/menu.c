@@ -20,6 +20,7 @@
 #include "menu.h"
 #include "mp3_player.h"
 #include "png_decoder.h"
+#include "screensaver.h"
 #include "settings.h"
 #include "sound.h"
 #include "usb_comm.h"
@@ -37,6 +38,7 @@
 #define FPS_LIMIT                   (30.0f)
 
 static menu_t *menu;
+static float idle_seconds = 0.0f;
 
 /** FIXME: These are used for overriding libdragon's global variables for TV type to allow PAL60 compatibility
  *  with hardware mods that don't really understand the VI output.
@@ -134,6 +136,8 @@ static void menu_init (boot_params_t *boot_params) {
         bgm_load_and_play(menu->storage_prefix);
     }
 
+    screensaver_init();
+
     menu->browser.directory = path_init(menu->storage_prefix, menu->settings.default_directory);
     if (!directory_exists(path_get(menu->browser.directory))) {
         path_free(menu->browser.directory);
@@ -165,6 +169,7 @@ static void menu_deinit (menu_t *menu) {
     display_close();
 
     bgm_deinit();
+    screensaver_deinit();
     sound_deinit();
 
     rdpq_close();
@@ -240,13 +245,43 @@ void menu_run (boot_params_t *boot_params) {
         if (display != NULL) {
             actions_update(menu);
 
-            view_t *view = menu_get_view(menu->mode);
-            if (view && view->show) {
-                view->show(menu, display);
-            } else {
+            // Check for any input activity
+            bool any_input = menu->actions.go_up || menu->actions.go_down ||
+                             menu->actions.go_left || menu->actions.go_right ||
+                             menu->actions.enter || menu->actions.back ||
+                             menu->actions.options || menu->actions.settings ||
+                             menu->actions.lz_context;
+
+            // Handle screensaver if enabled
+            if (menu->settings.screensaver_enabled) {
+                if (any_input) {
+                    idle_seconds = 0.0f;
+                    if (screensaver_is_active()) {
+                        screensaver_stop();
+                    }
+                } else {
+                    // Increment idle time (at 30fps, each frame is ~1/30 second)
+                    idle_seconds += (1.0f / FPS_LIMIT);
+                }
+
+                // Update screensaver state
+                screensaver_update(idle_seconds);
+            }
+
+            // Draw either screensaver or normal view
+            if (menu->settings.screensaver_enabled && screensaver_is_active()) {
                 rdpq_attach_clear(display, NULL);
-                rdpq_detach_wait();
-                display_show(display);
+                screensaver_draw();
+                rdpq_detach_show();
+            } else {
+                view_t *view = menu_get_view(menu->mode);
+                if (view && view->show) {
+                    view->show(menu, display);
+                } else {
+                    rdpq_attach_clear(display, NULL);
+                    rdpq_detach_wait();
+                    display_show(display);
+                }
             }
 
             if (menu->mode == MENU_MODE_BOOT) {

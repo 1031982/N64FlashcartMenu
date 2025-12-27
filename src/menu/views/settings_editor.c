@@ -55,6 +55,11 @@ static void set_bgm_enabled_type (menu_t *menu, void *arg) {
     settings_save(&menu->settings);
 }
 
+static void set_screensaver_enabled_type (menu_t *menu, void *arg) {
+    menu->settings.screensaver_enabled = (bool)(uintptr_t)(arg);
+    settings_save(&menu->settings);
+}
+
 #ifndef FEATURE_AUTOLOAD_ROM_ENABLED
 static void set_use_rom_fast_reboot_enabled_type (menu_t *menu, void *arg) {
     menu->settings.rom_fast_reboot_enabled = (bool)(uintptr_t)(arg);
@@ -130,6 +135,18 @@ static component_context_menu_t set_soundfx_enabled_type_context_menu = {
     .list = {
         {.text = "On", .action = set_soundfx_enabled_type, .arg = (void *)(uintptr_t)(true) },
         {.text = "Off", .action = set_soundfx_enabled_type, .arg = (void *)(uintptr_t)(false) },
+    COMPONENT_CONTEXT_MENU_LIST_END,
+}};
+
+static int get_screensaver_enabled_current_selection (menu_t *menu) {
+    return menu->settings.screensaver_enabled ? 0 : 1;
+}
+
+static component_context_menu_t set_screensaver_enabled_type_context_menu = {
+    .get_default_selection = get_screensaver_enabled_current_selection,
+    .list = {
+        {.text = "On", .action = set_screensaver_enabled_type, .arg = (void *)(uintptr_t)(true) },
+        {.text = "Off", .action = set_screensaver_enabled_type, .arg = (void *)(uintptr_t)(false) },
     COMPONENT_CONTEXT_MENU_LIST_END,
 }};
 
@@ -248,6 +265,7 @@ static component_context_menu_t set_rumble_enabled_type_context_menu = {
 static component_context_menu_t options_context_menu = { .list = {
     { .text = "Show Hidden Files", .submenu = &set_protected_entries_type_context_menu },
     { .text = "Sound Effects", .submenu = &set_soundfx_enabled_type_context_menu },
+    { .text = "Use Screensaver", .submenu = &set_screensaver_enabled_type_context_menu },
     { .text = "Use Saves Folder", .submenu = &set_use_saves_folder_type_context_menu },
     { .text = "Show Saves Folder", .submenu = &set_show_saves_folder_type_context_menu },
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
@@ -317,6 +335,7 @@ static void draw (menu_t *menu, surface_t *d) {
         "To change the following menu settings, press 'A':\n"
         "     Show Hidden Files : %s\n"
         "     Sound Effects     : %s\n"
+        "     Use Screensaver   : %s\n"
         "     Use Saves folder  : %s\n"
         "     Show Saves folder : %s\n"
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
@@ -340,6 +359,7 @@ static void draw (menu_t *menu, surface_t *d) {
         menu->settings.default_directory,
         format_switch(menu->settings.show_protected_entries),
         format_switch(menu->settings.soundfx_enabled),
+        format_switch(menu->settings.screensaver_enabled),
         format_switch(menu->settings.use_saves_folder),
         format_switch(menu->settings.show_saves_folder),
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
