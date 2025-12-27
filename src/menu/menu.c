@@ -246,21 +246,24 @@ void menu_run (boot_params_t *boot_params) {
                              menu->actions.options || menu->actions.settings ||
                              menu->actions.lz_context;
 
-            if (any_input) {
-                idle_seconds = 0.0f;
-                if (screensaver_is_active()) {
-                    screensaver_stop();
+            // Handle screensaver if enabled
+            if (menu->settings.screensaver_enabled) {
+                if (any_input) {
+                    idle_seconds = 0.0f;
+                    if (screensaver_is_active()) {
+                        screensaver_stop();
+                    }
+                } else {
+                    // Increment idle time (at 30fps, each frame is ~1/30 second)
+                    idle_seconds += (1.0f / FPS_LIMIT);
                 }
-            } else {
-                // Increment idle time (at 30fps, each frame is ~1/30 second)
-                idle_seconds += (1.0f / FPS_LIMIT);
+
+                // Update screensaver state
+                screensaver_update(idle_seconds);
             }
 
-            // Update screensaver state
-            screensaver_update(idle_seconds);
-
             // Draw either screensaver or normal view
-            if (screensaver_is_active()) {
+            if (menu->settings.screensaver_enabled && screensaver_is_active()) {
                 rdpq_attach_clear(display, NULL);
                 screensaver_draw();
                 rdpq_detach_show();

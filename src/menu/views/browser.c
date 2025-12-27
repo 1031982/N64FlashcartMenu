@@ -445,25 +445,65 @@ static void start_screensaver_preview (menu_t *menu, void *arg) {
     screensaver_start();
 }
 
-static component_context_menu_t settings_context_menu = {
-    .list = {
-        { .text = "Controller Pak manager", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_CONTROLLER_PAKFS) },
-        { .text = "Menu settings", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_SETTINGS_EDITOR) },
-        { .text = "Time (RTC) settings", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_RTC) },
-        { .text = "Menu information", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_CREDITS) },
-        { .text = "Flashcart information", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_FLASHCART) },
-        { .text = "N64 information", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_SYSTEM_INFO) },
-        { .text = "Screensaver", .action = start_screensaver_preview },
-        COMPONENT_CONTEXT_MENU_LIST_END,
+/** @brief Maximum number of items in dynamic settings menu */
+#define SETTINGS_MENU_MAX_ITEMS 16
+
+/** @brief Dynamic settings menu storage */
+static struct {
+    int row_count;
+    int row_selected;
+    bool hide_pending;
+    component_context_menu_t *parent;
+    component_context_menu_t *submenu;
+    int (*get_default_selection)(menu_t *menu);
+    struct {
+        const char *text;
+        void (*action)(menu_t *menu, void *arg);
+        void *arg;
+        component_context_menu_t *submenu;
+    } list[SETTINGS_MENU_MAX_ITEMS];
+} settings_context_menu;
+
+static void build_settings_context_menu(menu_t *menu) {
+    int i = 0;
+
+    // Always-present items
+    settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+        .text = "Controller Pak manager", .action = set_menu_next_mode, .arg = (void *)(MENU_MODE_CONTROLLER_PAKFS)
+    };
+    settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+        .text = "Menu settings", .action = set_menu_next_mode, .arg = (void *)(MENU_MODE_SETTINGS_EDITOR)
+    };
+    settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+        .text = "Time (RTC) settings", .action = set_menu_next_mode, .arg = (void *)(MENU_MODE_RTC)
+    };
+    settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+        .text = "Menu information", .action = set_menu_next_mode, .arg = (void *)(MENU_MODE_CREDITS)
+    };
+    settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+        .text = "Flashcart information", .action = set_menu_next_mode, .arg = (void *)(MENU_MODE_FLASHCART)
+    };
+    settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+        .text = "N64 information", .action = set_menu_next_mode, .arg = (void *)(MENU_MODE_SYSTEM_INFO)
+    };
+
+    // Conditional items based on settings
+    if (menu->settings.screensaver_enabled) {
+        settings_context_menu.list[i++] = (typeof(settings_context_menu.list[0])){
+            .text = "Screensaver", .action = start_screensaver_preview
+        };
     }
-};
+
+    // End marker
+    settings_context_menu.list[i] = (typeof(settings_context_menu.list[0])){ .text = NULL };
+}
 
 static void process (menu_t *menu) {
     if (ui_components_context_menu_process(menu, menu->browser.archive ? &archive_context_menu : &entry_context_menu)) {
         return;
     }
 
-    if (ui_components_context_menu_process(menu, &settings_context_menu)) {
+    if (ui_components_context_menu_process(menu, (component_context_menu_t *)&settings_context_menu)) {
         return;
     }
 
@@ -543,7 +583,9 @@ static void process (menu_t *menu) {
         ui_components_context_menu_show(menu->browser.archive ? &archive_context_menu : &entry_context_menu);
         sound_play_effect(SFX_SETTING);
     } else if (menu->actions.settings) {
-        ui_components_context_menu_show(&settings_context_menu);
+        build_settings_context_menu(menu);
+        ui_components_context_menu_init((component_context_menu_t *)&settings_context_menu);
+        ui_components_context_menu_show((component_context_menu_t *)&settings_context_menu);
         sound_play_effect(SFX_SETTING);
     } else if (menu->actions.go_right) {
         menu->next_mode = MENU_MODE_HISTORY;
@@ -616,7 +658,7 @@ static void draw (menu_t *menu, surface_t *d) {
 
     ui_components_context_menu_draw(menu->browser.archive ? &archive_context_menu : &entry_context_menu);
 
-    ui_components_context_menu_draw(&settings_context_menu);
+    ui_components_context_menu_draw((component_context_menu_t *)&settings_context_menu);
 
     rdpq_detach_show();
 }
@@ -626,7 +668,8 @@ void view_browser_init (menu_t *menu) {
     if (!menu->browser.valid) {
         ui_components_context_menu_init(&entry_context_menu);
         ui_components_context_menu_init(&archive_context_menu);
-        ui_components_context_menu_init(&settings_context_menu);
+        build_settings_context_menu(menu);
+        ui_components_context_menu_init((component_context_menu_t *)&settings_context_menu);
         if (load_directory(menu)) {
             path_free(menu->browser.directory);
             menu->browser.directory = path_init(menu->storage_prefix, "");

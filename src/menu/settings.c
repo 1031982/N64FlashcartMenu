@@ -32,6 +32,7 @@ static settings_t init = {
     .show_browser_rom_tags = true,
     .bgm_enabled = false,
     .rumble_enabled = false,
+    .screensaver_enabled = false,
 };
 
 
@@ -73,6 +74,7 @@ void settings_load (settings_t *settings) {
     settings->show_browser_rom_tags = mini_get_bool(ini, "menu", "show_browser_rom_tags", init.show_browser_rom_tags);
     settings->bgm_enabled = mini_get_bool(ini, "menu_beta_flag", "bgm_enabled", init.bgm_enabled);
     settings->rumble_enabled = mini_get_bool(ini, "menu_beta_flag", "rumble_enabled", init.rumble_enabled);
+    settings->screensaver_enabled = mini_get_bool(ini, "menu", "screensaver_enabled", init.screensaver_enabled);
 
     mini_free(ini);
 }
@@ -90,6 +92,7 @@ void settings_save (settings_t *settings) {
     mini_set_bool(ini, "menu", "use_saves_folder", settings->use_saves_folder);
     mini_set_bool(ini, "menu", "show_saves_folder", settings->show_saves_folder);
     mini_set_bool(ini, "menu", "soundfx_enabled", settings->soundfx_enabled);
+    mini_set_bool(ini, "menu", "screensaver_enabled", settings->screensaver_enabled);
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
     mini_set_bool(ini, "menu", "autoload_rom_enabled", settings->rom_autoload_enabled);
     mini_set_string(ini, "autoload", "rom_path", settings->rom_autoload_path);
