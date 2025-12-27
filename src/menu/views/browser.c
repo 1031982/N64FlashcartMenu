@@ -7,6 +7,7 @@
 
 #include "../cart_load.h"
 #include "../fonts.h"
+#include "../screensaver.h"
 #include "utils/fs.h"
 #include "views.h"
 #include "../sound.h"
@@ -440,6 +441,10 @@ static void set_menu_next_mode (menu_t *menu, void *arg) {
     menu->next_mode = next_mode;
 }
 
+static void start_screensaver_preview (menu_t *menu, void *arg) {
+    screensaver_start();
+}
+
 static component_context_menu_t settings_context_menu = {
     .list = {
         { .text = "Controller Pak manager", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_CONTROLLER_PAKFS) },
@@ -448,6 +453,7 @@ static component_context_menu_t settings_context_menu = {
         { .text = "Menu information", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_CREDITS) },
         { .text = "Flashcart information", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_FLASHCART) },
         { .text = "N64 information", .action = set_menu_next_mode, .arg = (void *) (MENU_MODE_SYSTEM_INFO) },
+        { .text = "Screensaver", .action = start_screensaver_preview },
         COMPONENT_CONTEXT_MENU_LIST_END,
     }
 };
