@@ -279,43 +279,141 @@ vcpak_err_t vcpak_backup_from_physical(const char *pak_path, int controller) {
     return VCPAK_OK;
 }
 
+/**
+ * @brief Calculate the ID sector checksum (matches libdragon's __cpakfs_fsid_checksum)
+ *
+ * The checksum is computed over the first 14 big-endian words (28 bytes) of the ID sector.
+ */
+static void vcpak_calc_id_checksum(const uint8_t *id_sector, uint16_t *checksum1, uint16_t *checksum2) {
+    uint32_t sum = 0;
+    for (int i = 0; i < 14; i++) {
+        // Read as big-endian 16-bit value
+        sum += ((uint16_t)id_sector[i * 2] << 8) | id_sector[i * 2 + 1];
+    }
+    *checksum1 = sum & 0xFFFF;
+    *checksum2 = 0xFFF2 - *checksum1;
+}
+
+/**
+ * @brief Calculate the FAT page checksum (matches libdragon's __cpakfs_fat_checksum)
+ *
+ * The checksum is the sum of all bytes in entries starting from start_idx.
+ */
+static uint8_t vcpak_calc_fat_checksum(const uint8_t *fat_page, int start_idx) {
+    uint8_t checksum = 0;
+    for (int i = start_idx; i < 128; i++) {
+        checksum += fat_page[i * 2];      // bank byte
+        checksum += fat_page[i * 2 + 1];  // page byte
+    }
+    return checksum;
+}
+
 vcpak_err_t vcpak_create_empty(const char *pak_path) {
     // Create a properly formatted empty Controller Pak image
     // Standard pak is 32KB (1 bank) with proper filesystem structure
+    //
+    // Structure (32KB = 128 pages of 256 bytes):
+    // - Page 0 (0x000-0x0FF): ID area with checksums at specific blocks
+    // - Pages 1-2 (0x100-0x2FF): FAT (File Allocation Table) and backup
+    // - Pages 3-4 (0x300-0x4FF): Note table and backup
+    // - Pages 5-127 (0x500-0x7FFF): Data pages (available for saves)
 
     uint8_t *data = malloc(VCPAK_BANK_SIZE);
     if (!data) {
         return VCPAK_ERR_ALLOC;
     }
 
-    // Initialize with 0x00 (empty pak pattern)
+    // Initialize entire pak with 0x00
     memset(data, 0x00, VCPAK_BANK_SIZE);
 
-    // Set up the basic mempak filesystem structure
-    // The mempak has a specific structure:
-    // - Pages 0-4: ID area and checksums
-    // - Page 5: Table of contents
-    // - Pages 6-127: Data pages
+    // === PAGE 0: ID Area ===
+    // The ID sector (32 bytes) is written at 4 locations within page 0:
+    // blocks 1, 3, 4, 6 (offsets 0x20, 0x60, 0x80, 0xC0)
+    // This matches libdragon's pattern: 0x5A = 01011010 binary
 
-    // ID area at offset 0x0000 (repeated at 0x0100)
-    // Format: 0x81 repeated 32 times, then serial, then checksum areas
-    for (int i = 0; i < 32; i++) {
-        data[i] = 0x81;
-        data[0x100 + i] = 0x81;
+    // Build the ID sector (32 bytes)
+    uint8_t id_sector[32];
+    memset(id_sector, 0, 32);
+
+    // Bytes 0-23: Serial number (can be zeros or random, we use a simple pattern)
+    // Using "N64MENU" as identifier in the serial area
+    memcpy(&id_sector[0], "N64MENUVPAK", 11);
+    // Rest of serial is zeros
+
+    // Bytes 24-25: device_id_lsb (big-endian, value 0x0001)
+    id_sector[24] = 0x00;
+    id_sector[25] = 0x01;
+
+    // Bytes 26-27: bank_size_msb (big-endian, value 0x0100 for 1 bank = 256 FAT entries)
+    id_sector[26] = 0x01;
+    id_sector[27] = 0x00;
+
+    // Bytes 28-31: checksums (calculated below)
+    uint16_t checksum1, checksum2;
+    vcpak_calc_id_checksum(id_sector, &checksum1, &checksum2);
+
+    // Store checksums in big-endian
+    id_sector[28] = (checksum1 >> 8) & 0xFF;
+    id_sector[29] = checksum1 & 0xFF;
+    id_sector[30] = (checksum2 >> 8) & 0xFF;
+    id_sector[31] = checksum2 & 0xFF;
+
+    // Write ID sector to all 4 required locations (pattern 0x5A)
+    // Bit positions: 1, 3, 4, 6 -> offsets 0x20, 0x60, 0x80, 0xC0
+    memcpy(&data[0x20], id_sector, 32);
+    memcpy(&data[0x60], id_sector, 32);
+    memcpy(&data[0x80], id_sector, 32);
+    memcpy(&data[0xC0], id_sector, 32);
+
+    // === PAGES 1-2: FAT (File Allocation Table) ===
+    // For a 1-bank pak, the reserved pages are:
+    // Page 0: ID sector
+    // Pages 1-2: FAT (2 copies)
+    // Pages 3-4: Note table (2 copies)
+    // Total reserved: 5 pages (indices 0-4)
+    //
+    // FAT entry format: 2 bytes (bank, page)
+    // - 0x00, 0x00 = Reserved (system page)
+    // - 0x00, 0x01 = End of chain (terminator)
+    // - 0x00, 0x03 = Unused (free page)
+
+    uint8_t fat_page[256];
+    memset(fat_page, 0, 256);
+
+    // Entry 0: will hold checksum (set after calculating)
+    fat_page[0] = 0x00;
+    fat_page[1] = 0x00;  // placeholder for checksum
+
+    // Entries 1-4: Reserved (system pages)
+    for (int i = 1; i <= 4; i++) {
+        fat_page[i * 2] = 0x00;      // bank = 0
+        fat_page[i * 2 + 1] = 0x00;  // page = 0 (reserved marker)
     }
 
-    // Pages 1-3 contain index table copies
-    // Initialize index table entries as free (0x03 = free)
-    // Index table starts at page 5 (offset 0x500) with 128 entries (one per page)
-    for (int i = 0; i < 128; i++) {
-        // Each entry is 2 bytes: next page pointer
-        // 0x0003 = free, 0x0001 = end of chain
-        data[0x300 + i * 2] = 0x00;
-        data[0x300 + i * 2 + 1] = 0x03;  // Free
+    // Entries 5-127: Unused (free pages available for saves)
+    for (int i = 5; i < 128; i++) {
+        fat_page[i * 2] = 0x00;      // bank = 0
+        fat_page[i * 2 + 1] = 0x03;  // page = 3 (unused marker)
     }
 
-    // Copy index table to backup locations
-    memcpy(&data[0x500], &data[0x300], 256);
+    // Calculate and store FAT checksum
+    // For the first FAT page, checksum starts from index 5 (after reserved entries)
+    // Actually, libdragon uses: int reserved = 1 + (fat_size >> 8) * 2 + 2 = 5
+    // And checksum is calculated from index 1 for simplicity (matching __cpakfs_fat_checksum behavior)
+    uint8_t fat_checksum = vcpak_calc_fat_checksum(fat_page, 5);
+    fat_page[1] = fat_checksum;
+
+    // Write FAT to page 1 (0x100) and backup to page 2 (0x200)
+    memcpy(&data[0x100], fat_page, 256);
+    memcpy(&data[0x200], fat_page, 256);
+
+    // === PAGES 3-4: Note Table ===
+    // The note table holds 16 notes of 32 bytes each = 512 bytes total
+    // For an empty pak, all notes are zeroed (empty)
+    // Pages 3-4 (0x300-0x4FF) are already zeroed from memset
+
+    // === PAGES 5-127: Data Pages ===
+    // Already zeroed from memset, available for game saves
 
     FILE *fp = fopen(pak_path, "wb");
     if (!fp) {
