@@ -481,7 +481,7 @@ vcpak_err_t vcpak_generate_filename(const char *storage_prefix, const char *game
  */
 
 static void vcpak_get_state_path(const char *storage_prefix, char *out_path, size_t out_size) {
-    snprintf(out_path, out_size, "%s/menu/%s",
+    snprintf(out_path, out_size, "%smenu/%s",
              storage_prefix ? storage_prefix : "",
              VCPAK_STATE_FILENAME);
 }
