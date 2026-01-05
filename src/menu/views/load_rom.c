@@ -746,7 +746,7 @@ void view_load_rom_display (menu_t *menu, surface_t *display) {
         load(menu);
     }
 
-    if (menu->next_mode != MENU_MODE_LOAD_ROM && menu->next_mode != MENU_MODE_DATEL_CODE_EDITOR) {
+    if (menu->next_mode != MENU_MODE_LOAD_ROM && menu->next_mode != MENU_MODE_DATEL_CODE_EDITOR && menu->next_mode != MENU_MODE_VCPAK_SELECT) {
         menu->load.load_history_id = -1;
         menu->load.load_favorite_id = -1;
         deinit();
