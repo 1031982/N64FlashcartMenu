@@ -13,8 +13,6 @@ static int16_t controller_selected;
 static char failure_message[255];
 static bool start_complete_restore;
 
-#define CONTROLLERPAK_BANK_SIZE 32768
-
 static bool restore_controller_pak(int controller) {
     sprintf(failure_message, " ");
 
@@ -25,7 +23,7 @@ static bool restore_controller_pak(int controller) {
 
     cpakfs_unmount(controller);
 
-    uint8_t *data = malloc(CONTROLLERPAK_BANK_SIZE);
+    uint8_t *data = malloc(CPAK_BANK_SIZE);
     if (!data) {
         sprintf(failure_message, "Memory allocation failed!");
         return false;
@@ -53,7 +51,7 @@ static bool restore_controller_pak(int controller) {
     }
     rewind(fp);
 
-    int total_banks = (int)((filesize + CONTROLLERPAK_BANK_SIZE - 1) / CONTROLLERPAK_BANK_SIZE);
+    int total_banks = (int)((filesize + CPAK_BANK_SIZE - 1) / CPAK_BANK_SIZE);
 
     int banks_on_device = cpak_probe_banks(controller);
     if (banks_on_device < 1) {
@@ -73,7 +71,7 @@ static bool restore_controller_pak(int controller) {
     debugf("Restoring Controller Pak: %ld bytes (%d banks)\n", filesize, total_banks);
 
     for (int bank = 0; bank < total_banks; bank++) {
-        size_t bytesRead = fread(data, 1, CONTROLLERPAK_BANK_SIZE, fp);
+        size_t bytesRead = fread(data, 1, CPAK_BANK_SIZE, fp);
         if (bytesRead == 0 && ferror(fp)) {
             sprintf(failure_message, "Read error from dump file!");
             fclose(fp);

@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <libdragon.h>
 #include <fatfs/ff.h>
 #include <errno.h>
