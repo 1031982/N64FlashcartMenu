@@ -237,25 +237,16 @@ vcpak_err_t vcpak_restore_to_physical(const char *pak_path, int controller) {
 vcpak_err_t vcpak_backup_from_physical(const char *pak_path, int controller) {
     debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: path=%s, controller=%d\n", pak_path, controller);
 
-    if (!has_cpak(controller)) {
-        debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: no cpak in port %d\n", controller);
-        return VCPAK_ERR_NO_CPAK;
-    }
-
     cpak_io_context_t ctx;
     cpak_io_err_t err = cpak_backup_to_file(controller, pak_path, &ctx);
 
-    /* Log bank count */
-    if (ctx.device_banks < 1) {
-        debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: cpak_probe_banks returned %d, using 1\n", ctx.device_banks);
-    }
-    int banks_to_backup = (ctx.device_banks < 1) ? 1 : ctx.device_banks;
-    debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: %d banks to backup\n", banks_to_backup);
-
     switch (err) {
         case CPAK_IO_OK:
-            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: success\n");
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: success (%d banks)\n", ctx.device_banks);
             return VCPAK_OK;
+        case CPAK_IO_ERR_NO_PAK:
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: no cpak in port %d\n", controller);
+            return VCPAK_ERR_NO_CPAK;
         case CPAK_IO_ERR_ALLOC:
             debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: malloc failed\n");
             return VCPAK_ERR_ALLOC;
