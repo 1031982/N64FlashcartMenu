@@ -11,8 +11,6 @@
 
 #define MAX_STRING_LENGTH 62
 
-#define MEMPAK_BANK_SIZE 32768
-
 #define CPAK_EXTENSION ".pak"   
 #define CPAK_NOTE_EXTENSION ".paknote"
 
@@ -259,7 +257,7 @@ static void dump_complete_cpak(int port) {
         return;
     }
 
-    uint8_t *bankbuf = malloc(MEMPAK_BANK_SIZE);
+    uint8_t *bankbuf = malloc(CPAK_BANK_SIZE);
     if (!bankbuf) {
         sprintf(failure_message_note, "Memory allocation failed!");
         error_message_displayed = true;
@@ -268,8 +266,8 @@ static void dump_complete_cpak(int port) {
     }
 
     for (int b = 0; b < banks; ++b) {
-        int rd = cpak_read((joypad_port_t)port, (uint8_t)b, 0, bankbuf, MEMPAK_BANK_SIZE);
-        if (rd < 0 || rd != MEMPAK_BANK_SIZE) {
+        int rd = cpak_read((joypad_port_t)port, (uint8_t)b, 0, bankbuf, CPAK_BANK_SIZE);
+        if (rd < 0 || rd != CPAK_BANK_SIZE) {
             sprintf(failure_message_note, "Failed to read Controller Pak bank %d (err=%d)", b, (rd < 0) ? errno : -1);
             error_message_displayed = true;
             free(bankbuf);
@@ -277,8 +275,8 @@ static void dump_complete_cpak(int port) {
             return;
         }
 
-        size_t wr = fwrite(bankbuf, 1, MEMPAK_BANK_SIZE, fp);
-        if (wr != MEMPAK_BANK_SIZE) {
+        size_t wr = fwrite(bankbuf, 1, CPAK_BANK_SIZE, fp);
+        if (wr != CPAK_BANK_SIZE) {
             sprintf(failure_message_note, "Failed to write data to file: %s", complete_filename);
             error_message_displayed = true;
             free(bankbuf);

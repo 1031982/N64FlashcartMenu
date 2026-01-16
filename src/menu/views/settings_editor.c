@@ -49,6 +49,11 @@ static void set_pal60_type (menu_t *menu, void *arg) {
     settings_save(&menu->settings);
 }
 
+static void set_virtual_cpak_enabled_type (menu_t *menu, void *arg) {
+    menu->settings.virtual_cpak_enabled = (bool)(uintptr_t)(arg);
+    settings_save(&menu->settings);
+}
+
 #ifndef FEATURE_AUTOLOAD_ROM_ENABLED
 static void set_use_rom_fast_reboot_enabled_type (menu_t *menu, void *arg) {
     menu->settings.rom_fast_reboot_enabled = (bool)(uintptr_t)(arg);
@@ -119,6 +124,18 @@ static component_context_menu_t set_soundfx_enabled_type_context_menu = {
     .list = {
         {.text = "On", .action = set_soundfx_enabled_type, .arg = (void *)(uintptr_t)(true) },
         {.text = "Off", .action = set_soundfx_enabled_type, .arg = (void *)(uintptr_t)(false) },
+    COMPONENT_CONTEXT_MENU_LIST_END,
+}};
+
+static int get_virtual_cpak_enabled_current_selection (menu_t *menu) {
+    return menu->settings.virtual_cpak_enabled ? 0 : 1;
+}
+
+static component_context_menu_t set_virtual_cpak_enabled_type_context_menu = {
+    .get_default_selection = get_virtual_cpak_enabled_current_selection,
+    .list = {
+        {.text = "On", .action = set_virtual_cpak_enabled_type, .arg = (void *)(uintptr_t)(true) },
+        {.text = "Off", .action = set_virtual_cpak_enabled_type, .arg = (void *)(uintptr_t)(false) },
     COMPONENT_CONTEXT_MENU_LIST_END,
 }};
 
@@ -228,7 +245,8 @@ static component_context_menu_t options_context_menu = { .list = {
     { .text = "Use Saves Folder", .submenu = &set_use_saves_folder_type_context_menu },
     { .text = "Show Saves Folder", .submenu = &set_show_saves_folder_type_context_menu },
     { .text = "PAL60 Mode", .submenu = &set_pal60_type_context_menu },
-    #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
+    { .text = "Virtual CPak", .submenu = &set_virtual_cpak_enabled_type_context_menu },
+#ifdef FEATURE_AUTOLOAD_ROM_ENABLED
     { .text = "ROM Loading Bar", .submenu = &set_loading_progress_bar_enabled_context_menu },
 #else
     { .text = "Fast Reboot ROM", .submenu = &set_use_rom_fast_reboot_context_menu },
@@ -296,6 +314,7 @@ static void draw (menu_t *menu, surface_t *d) {
         "     Use Saves folder  : %s\n"
         "     Show Saves folder : %s\n"
         "*    PAL60 Mode        : %s\n"
+        "     Virtual CPak      : %s\n"
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
         "     Autoload ROM      : %s\n\n"
         "     ROM Loading Bar   : %s\n"
@@ -317,6 +336,7 @@ static void draw (menu_t *menu, surface_t *d) {
         format_switch(menu->settings.use_saves_folder),
         format_switch(menu->settings.show_saves_folder),
         format_switch(menu->settings.pal60_enabled),
+        format_switch(menu->settings.virtual_cpak_enabled),
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
         format_switch(menu->settings.rom_autoload_enabled),
         format_switch(menu->settings.loading_progress_bar_enabled)

@@ -25,6 +25,12 @@
 #define MAX_NUM_NOTES 16
 
 /**
+ * @def CPAK_BANK_SIZE
+ * @brief Size of one Controller Pak bank in bytes (32KB).
+ */
+#define CPAK_BANK_SIZE 32768
+
+/**
  * @struct cpakfs_path_strings_t
  * @brief Structure holding parsed components of a Controller Pak file path.
  *
