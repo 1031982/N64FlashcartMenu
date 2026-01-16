@@ -184,89 +184,54 @@ void vcpak_list_free(vcpak_list_t *list) {
 vcpak_err_t vcpak_restore_to_physical(const char *pak_path, int controller) {
     debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: path=%s, controller=%d\n", pak_path, controller);
 
-    if (!has_cpak(controller)) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: no cpak in port %d\n", controller);
-        return VCPAK_ERR_NO_CPAK;
-    }
-
     /* Unmount any existing filesystem on the pak */
     cpakfs_unmount(controller);
 
-    uint8_t *data = malloc(CPAK_BANK_SIZE);
-    if (!data) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: malloc failed\n");
-        return VCPAK_ERR_ALLOC;
+    cpak_io_context_t ctx;
+    cpak_io_err_t err = cpak_restore_from_file(controller, pak_path, &ctx);
+
+    /* Log file info after size determination */
+    if (ctx.filesize > 0) {
+        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: filesize=%ld, banks=%d\n", ctx.filesize, ctx.total_banks);
     }
 
-    FILE *fp = fopen(pak_path, "rb");
-    if (!fp) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: file not found: %s\n", pak_path);
-        free(data);
-        return VCPAK_ERR_FILE_NOT_FOUND;
-    }
-
-    /* Get file size */
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: fseek failed\n");
-        fclose(fp);
-        free(data);
-        return VCPAK_ERR_IO;
-    }
-    long filesize = ftell(fp);
-    if (filesize < 0) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: ftell failed\n");
-        fclose(fp);
-        free(data);
-        return VCPAK_ERR_IO;
-    }
-    rewind(fp);
-
-    int total_banks = (int)((filesize + CPAK_BANK_SIZE - 1) / CPAK_BANK_SIZE);
-    debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: filesize=%ld, banks=%d\n", filesize, total_banks);
-
-    /* Check if file fits on physical pak */
-    int banks_on_device = cpak_probe_banks(controller);
-    if (banks_on_device < 1) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: cpak_probe_banks failed\n");
-        fclose(fp);
-        free(data);
-        return VCPAK_ERR_CORRUPTED;
-    }
-    if (total_banks > banks_on_device) {
-        debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: file too large (%d banks > %d on device)\n",
-               total_banks, banks_on_device);
-        fclose(fp);
-        free(data);
-        return VCPAK_ERR_TOO_LARGE;
-    }
-
-    /* Write banks to physical pak */
-    for (int bank = 0; bank < total_banks; bank++) {
-        size_t bytes_read = fread(data, 1, CPAK_BANK_SIZE, fp);
-        if (bytes_read == 0 && ferror(fp)) {
-            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: fread error at bank %d\n", bank);
-            fclose(fp);
-            free(data);
+    switch (err) {
+        case CPAK_IO_OK:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: success\n");
+            return VCPAK_OK;
+        case CPAK_IO_ERR_NO_PAK:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: no cpak in port %d\n", controller);
+            return VCPAK_ERR_NO_CPAK;
+        case CPAK_IO_ERR_ALLOC:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: malloc failed\n");
+            return VCPAK_ERR_ALLOC;
+        case CPAK_IO_ERR_FILE_OPEN:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: file not found: %s\n", pak_path);
+            return VCPAK_ERR_FILE_NOT_FOUND;
+        case CPAK_IO_ERR_FILE_SEEK:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: fseek failed\n");
             return VCPAK_ERR_IO;
-        }
-        if (bytes_read == 0 && feof(fp)) {
-            break;
-        }
-
-        int written = cpak_write((joypad_port_t)controller, (uint8_t)bank, 0, data, bytes_read);
-        if (written < 0 || (size_t)written != bytes_read) {
+        case CPAK_IO_ERR_FILE_FTELL:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: ftell failed\n");
+            return VCPAK_ERR_IO;
+        case CPAK_IO_ERR_PROBE_BANKS:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: cpak_probe_banks failed\n");
+            return VCPAK_ERR_CORRUPTED;
+        case CPAK_IO_ERR_TOO_LARGE:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: file too large (%d banks > %d on device)\n",
+                   ctx.total_banks, ctx.device_banks);
+            return VCPAK_ERR_TOO_LARGE;
+        case CPAK_IO_ERR_FILE_READ:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: fread error at bank %d\n", ctx.failed_bank);
+            return VCPAK_ERR_IO;
+        case CPAK_IO_ERR_PAK_WRITE:
             debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: cpak_write failed at bank %d (wrote %d)\n",
-                   bank, written);
-            fclose(fp);
-            free(data);
+                   ctx.failed_bank, ctx.bytes_actual);
             return VCPAK_ERR_IO;
-        }
+        default:
+            debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: unknown error %d\n", err);
+            return VCPAK_ERR_IO;
     }
-
-    fclose(fp);
-    free(data);
-    debugf(VCPAK_DEBUG_PREFIX "restore_to_physical: success\n");
-    return VCPAK_OK;
 }
 
 vcpak_err_t vcpak_backup_from_physical(const char *pak_path, int controller) {
@@ -277,51 +242,37 @@ vcpak_err_t vcpak_backup_from_physical(const char *pak_path, int controller) {
         return VCPAK_ERR_NO_CPAK;
     }
 
-    int banks = cpak_probe_banks(controller);
-    if (banks < 1) {
-        debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: cpak_probe_banks returned %d, using 1\n", banks);
-        banks = 1;  /* Fallback to 1 bank */
-    }
-    debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: %d banks to backup\n", banks);
+    cpak_io_context_t ctx;
+    cpak_io_err_t err = cpak_backup_to_file(controller, pak_path, &ctx);
 
-    uint8_t *data = malloc(CPAK_BANK_SIZE);
-    if (!data) {
-        debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: malloc failed\n");
-        return VCPAK_ERR_ALLOC;
+    /* Log bank count */
+    if (ctx.device_banks < 1) {
+        debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: cpak_probe_banks returned %d, using 1\n", ctx.device_banks);
     }
+    int banks_to_backup = (ctx.device_banks < 1) ? 1 : ctx.device_banks;
+    debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: %d banks to backup\n", banks_to_backup);
 
-    FILE *fp = fopen(pak_path, "wb");
-    if (!fp) {
-        debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: fopen failed for %s\n", pak_path);
-        free(data);
-        return VCPAK_ERR_IO;
-    }
-
-    /* Read banks from physical pak and write to file */
-    for (int bank = 0; bank < banks; bank++) {
-        int bytes_read = cpak_read((joypad_port_t)controller, (uint8_t)bank, 0,
-                                    data, CPAK_BANK_SIZE);
-        if (bytes_read < 0 || bytes_read != CPAK_BANK_SIZE) {
+    switch (err) {
+        case CPAK_IO_OK:
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: success\n");
+            return VCPAK_OK;
+        case CPAK_IO_ERR_ALLOC:
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: malloc failed\n");
+            return VCPAK_ERR_ALLOC;
+        case CPAK_IO_ERR_FILE_OPEN:
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: fopen failed for %s\n", pak_path);
+            return VCPAK_ERR_IO;
+        case CPAK_IO_ERR_PAK_READ:
             debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: cpak_read failed at bank %d (read %d)\n",
-                   bank, bytes_read);
-            fclose(fp);
-            free(data);
+                   ctx.failed_bank, ctx.bytes_actual);
             return VCPAK_ERR_IO;
-        }
-
-        size_t written = fwrite(data, 1, CPAK_BANK_SIZE, fp);
-        if (written != CPAK_BANK_SIZE) {
-            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: fwrite failed at bank %d\n", bank);
-            fclose(fp);
-            free(data);
+        case CPAK_IO_ERR_FILE_WRITE:
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: fwrite failed at bank %d\n", ctx.failed_bank);
             return VCPAK_ERR_IO;
-        }
+        default:
+            debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: unknown error %d\n", err);
+            return VCPAK_ERR_IO;
     }
-
-    fclose(fp);
-    free(data);
-    debugf(VCPAK_DEBUG_PREFIX "backup_from_physical: success\n");
-    return VCPAK_OK;
 }
 
 /**
