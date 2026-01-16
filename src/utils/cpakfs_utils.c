@@ -524,7 +524,6 @@ cpak_io_err_t cpak_restore_from_file(int controller, const char *filepath, cpak_
  * @brief Backup a Controller Pak to a file.
  *
  * Reads all banks from the physical Controller Pak and writes them to a file.
- * The caller is responsible for checking has_cpak() beforehand if needed.
  *
  * @param controller The controller index (0-3).
  * @param filepath The path to the .pak file to write.
@@ -533,6 +532,10 @@ cpak_io_err_t cpak_restore_from_file(int controller, const char *filepath, cpak_
  */
 cpak_io_err_t cpak_backup_to_file(int controller, const char *filepath, cpak_io_context_t *ctx) {
     cpak_io_context_init(ctx);
+
+    if (!has_cpak(controller)) {
+        return CPAK_IO_ERR_NO_PAK;
+    }
 
     int banks = cpak_probe_banks(controller);
     if (ctx) {

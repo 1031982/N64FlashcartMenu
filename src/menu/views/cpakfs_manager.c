@@ -250,6 +250,10 @@ static void dump_complete_cpak(int port) {
         case CPAK_IO_OK:
             process_complete_full_dump = true;
             return;
+        case CPAK_IO_ERR_NO_PAK:
+            sprintf(failure_message_note, "No Controller Pak detected in port %d!", port + 1);
+            error_message_displayed = true;
+            return;
         case CPAK_IO_ERR_ALLOC:
             sprintf(failure_message_note, "Memory allocation failed!");
             error_message_displayed = true;
