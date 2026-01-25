@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include "../bookkeeping.h"
 #include "../fonts.h"
+#include "../ui_components.h"
 #include "../ui_components/constants.h"
 #include "../sound.h"
 #include "views.h"
@@ -107,39 +108,57 @@ static void process(menu_t *menu) {
 }
 
 static void draw_list(menu_t *menu, surface_t *display) {
+    // Calculate viewport starting position (center-focused scrolling)
+    int starting_position = 0;
+    if (item_max > BOOKKEEPING_LIST_ENTRIES && selected_item >= (BOOKKEEPING_LIST_ENTRIES / 2)) {
+        starting_position = selected_item - (BOOKKEEPING_LIST_ENTRIES / 2);
+        if (starting_position >= item_max - BOOKKEEPING_LIST_ENTRIES) {
+            starting_position = item_max - BOOKKEEPING_LIST_ENTRIES;
+        }
+    }
+
+    // Draw scrollbar
+    ui_components_list_scrollbar_draw(selected_item, item_max, BOOKKEEPING_LIST_ENTRIES);
+
+    // Draw highlight for selected item
     if(selected_item != -1) {
-        float highlight_y = VISIBLE_AREA_Y0 + TEXT_MARGIN_VERTICAL + TAB_HEIGHT +  TEXT_OFFSET_VERTICAL + (selected_item * 19 * 2);
+        float highlight_y = VISIBLE_AREA_Y0 + TEXT_MARGIN_VERTICAL + TAB_HEIGHT + TEXT_OFFSET_VERTICAL + ((selected_item - starting_position) * BOOKKEEPING_ITEM_HEIGHT);
 
         ui_components_box_draw(
             VISIBLE_AREA_X0,
             highlight_y,
-            VISIBLE_AREA_X0 + FILE_LIST_HIGHLIGHT_WIDTH + LIST_SCROLLBAR_WIDTH,
+            VISIBLE_AREA_X0 + FILE_LIST_HIGHLIGHT_WIDTH,
             highlight_y + 39,
             FILE_LIST_HIGHLIGHT_COLOR
         );
     }
 
+    // Build display string for visible items only
     char buffer[1024];
-    buffer[0] = 0;
+    int offset = 0;
 
-    for(uint16_t i=0; i < item_max; i++) {   
+    int end_position = starting_position + BOOKKEEPING_LIST_ENTRIES;
+    if (end_position > item_max) {
+        end_position = item_max;
+    }
+
+    for(int i = starting_position; i < end_position; i++) {
         if(path_has_value(item_list[i].primary_path)) {
-            sprintf(buffer, "%s%d  : %s\n",buffer ,(i+1), path_last_get(item_list[i].primary_path));
+            offset += sprintf(buffer + offset, "%d  : %s\n", (i+1), path_last_get(item_list[i].primary_path));
         } else {
-            sprintf(buffer, "%s%d  : \n",buffer ,(i+1));
+            offset += sprintf(buffer + offset, "%d  : \n", (i+1));
         }
 
         if(path_has_value(item_list[i].secondary_path)) {
-            sprintf(buffer, "%s     %s\n", buffer, path_last_get(item_list[i].secondary_path));
+            offset += sprintf(buffer + offset, "     %s\n", path_last_get(item_list[i].secondary_path));
         } else {
-            sprintf(buffer, "%s\n", buffer);
+            offset += sprintf(buffer + offset, "\n");
         }
     }
 
-    int nbytes = strlen(buffer);
     rdpq_text_printn(
         &(rdpq_textparms_t) {
-            .width = VISIBLE_AREA_WIDTH - (TEXT_MARGIN_HORIZONTAL * 2),
+            .width = VISIBLE_AREA_WIDTH - LIST_SCROLLBAR_WIDTH - (TEXT_MARGIN_HORIZONTAL * 2),
             .height = LAYOUT_ACTIONS_SEPARATOR_Y - OVERSCAN_HEIGHT - (TEXT_MARGIN_VERTICAL * 2),
             .align = ALIGN_LEFT,
             .valign = VALIGN_TOP,
@@ -148,10 +167,10 @@ static void draw_list(menu_t *menu, surface_t *display) {
         },
         FNT_DEFAULT,
         VISIBLE_AREA_X0 + TEXT_MARGIN_HORIZONTAL,
-        VISIBLE_AREA_Y0 + TEXT_MARGIN_VERTICAL + TAB_HEIGHT +  TEXT_OFFSET_VERTICAL,
+        VISIBLE_AREA_Y0 + TEXT_MARGIN_VERTICAL + TAB_HEIGHT + TEXT_OFFSET_VERTICAL,
         buffer,
-        nbytes
-    );           
+        offset
+    );
 }
 
 static void draw(menu_t *menu, surface_t *display) {

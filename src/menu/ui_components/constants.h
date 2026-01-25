@@ -257,6 +257,17 @@
  * @brief Maximum number of file list entries.
  */
 #define LIST_ENTRIES                    (19)
+
+/**
+ * @def BOOKKEEPING_ITEM_HEIGHT
+ * @brief Height of a bookkeeping list item (pixels, 2 lines per item).
+ */
+#define BOOKKEEPING_ITEM_HEIGHT         (19 * 2)
+/**
+ * @def BOOKKEEPING_LIST_ENTRIES
+ * @brief Number of visible items in the bookkeeping viewport.
+ */
+#define BOOKKEEPING_LIST_ENTRIES        (8)
 /**
  * @def FILE_LIST_MAX_WIDTH
  * @brief Maximum width for a file list entry (pixels).
