@@ -348,7 +348,7 @@ static const match_t database[] = {
     MATCH_ID("N2M", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Madden Football 2002
     MATCH_ID("N2V", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Chameleon Twist 2
     MATCH_ID("N2P", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Rampage 2 - Universal Tour
-    MATCH_ID("N32", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Army Men - Sarge's Heroes 2
+    MATCH_ID("N32", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // Army Men - Sarge's Heroes 2
     MATCH_ID("N3P", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Triple Play 2000
     MATCH_ID("N3T", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Tony Hawk's Pro Skater 3
     MATCH_ID("N4W", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // 40 Winks
@@ -362,20 +362,20 @@ static const match_t database[] = {
     MATCH_ID("N9F", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // FIFA 99
     MATCH_ID("N9H", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // NHL '99
     MATCH_ID("N9M", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Madden Football '99
-    MATCH_ID("NAC", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Army Men - Air Combat
+    MATCH_ID("NAC", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // Army Men - Air Combat
     MATCH_ID("NAH", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Asteroids Hyper 64
     MATCH_ID("NAI", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // Midway's Greatest Arcade Hits Volume 1
-    MATCH_ID("NAM", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Army Men - Sarge's Heroes
-    MATCH_ID("NAR", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Armorines - Project S.W.A.R.M.
-    MATCH_ID("NAS", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // All-Star Baseball 2001
-    MATCH_ID("NAY", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // Aidyn Chronicles - The First Mage
+    MATCH_ID("NAM", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // Army Men - Sarge's Heroes
+    MATCH_ID("NAR", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // Armorines - Project S.W.A.R.M.
+    MATCH_ID("NAS", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // All-Star Baseball 2001
+    MATCH_ID("NAY", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_EXP_PAK_ENHANCED),                                         // Aidyn Chronicles - The First Mage
     MATCH_ID("NB2", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // NBA In the Zone '99 [NBA Pro '99 (E)]
     MATCH_ID("NB3", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Bust-A-Move '99 [Bust-A-Move 3 DX (E)]
     MATCH_ID("NB4", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Bass Masters 2000
     MATCH_ID("NB8", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Beetle Adventure Racing (J)
     MATCH_ID("NB9", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // NBA Jam '99
     MATCH_ID("NBA", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // NBA In the Zone '98 [NBA Pro '98 (E)]
-    MATCH_ID("NBE", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // All-Star Baseball 2000
+    MATCH_ID("NBE", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // All-Star Baseball 2000
     MATCH_ID("NBF", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Bio F.R.E.A.K.S.
     MATCH_ID("NBI", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // NFL Blitz 2000
     MATCH_ID("NBJ", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // Bakushou Jinsei 64 - Mezase! Resort Ou
@@ -509,7 +509,7 @@ static const match_t database[] = {
     MATCH_ID("NRU", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // San Francisco Rush 2049
     MATCH_ID("NRV", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Re-Volt
     MATCH_ID("NRW", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Turok: Rage Wars
-    MATCH_ID("NRX", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // Robotron 64
+    MATCH_ID("NRX", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Robotron 64
     MATCH_ID("NS2", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // Simcity 2000
     MATCH_ID("NSB", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Twisted Edge - Extreme Snowboarding [King Hill 64 - Extreme Snowboarding (J)]
     MATCH_ID("NSD", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Shadow Man
@@ -1031,3 +1031,4 @@ rom_err_t rom_config_load (path_t *path, rom_info_t *rom_info) {
 
     return ROM_OK;
 }
+
