@@ -351,7 +351,7 @@ static const match_t database[] = {
     MATCH_ID("N32", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // Army Men - Sarge's Heroes 2
     MATCH_ID("N3P", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Triple Play 2000
     MATCH_ID("N3T", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // Tony Hawk's Pro Skater 3
-    MATCH_ID("N4W", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_EXP_PAK_ENHANCED),                                         // 40 Winks
+    MATCH_ID("N4W", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                             // 40 Winks
     MATCH_ID("N64", SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK),                                                     // Kira to Kaiketsu! 64 Tanteidan
     MATCH_ID("N7I", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // FIFA Soccer 64 [FIFA 64 (E)]
     MATCH_ID("N8I", SAVE_TYPE_NONE, FEAT_CPAK),                                                                 // FIFA - Road to World Cup 98 [World Cup e no Michi (J)]
@@ -1031,6 +1031,7 @@ rom_err_t rom_config_load (path_t *path, rom_info_t *rom_info) {
 
     return ROM_OK;
 }
+
 
 
 
