@@ -260,7 +260,6 @@ static const match_t database[] = {
     MATCH_ID("ND2", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK),                                                        // Doraemon 2: Nobita to Hikari no Shinden
     MATCH_ID("ND6", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK | FEAT_VRU),                                             // Densha de Go! 64
     MATCH_ID("NDO", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK | FEAT_EXP_PAK_REQUIRED),                                // Donkey Kong 64
-    MATCH_ID("NED", SAVE TYPE_EEPROM_16KBIT, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_REQUIRED),                    // Mario Kart 64: Amped Up
     MATCH_ID("NEP", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                                // Star Wars Episode I: Racer
     MATCH_ID("NEV", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK),                                                        // Neon Genesis Evangelion
     MATCH_ID("NFU", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK),                                                        // Conker's Bad Fur Day
@@ -1032,6 +1031,7 @@ rom_err_t rom_config_load (path_t *path, rom_info_t *rom_info) {
 
     return ROM_OK;
 }
+
 
 
 
