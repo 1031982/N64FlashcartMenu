@@ -126,6 +126,10 @@ static const match_t database[] = {
 
     MATCH_CHECK_CODE(0xE3FF09DFCAE4B0ED, SAVE_TYPE_SRAM_256KBIT, FEAT_RPAK),                                    // Banjo tooie [USA CRACK]
 
+    MATCH_CHECK_CODE(0xFA6B70A466A891A8, SAVE_TYPE_NONE, FEAT_CPAK | FEAT_RPAK | FEAT_TPAK),                    // USB64 [Controler Tester]
+    MATCH_CHECK_CODE(0x39B06045A8D543F2, SAVE_TYPE_EEPROM_16KBIT, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_REQUIRED),// Mario Kart 64: Amped Up v3.21
+
+
     MATCH_ID_REGION_VERSION("NK4J", 0, SAVE_TYPE_SRAM_256KBIT, FEAT_RPAK),                                      // Kirby 64: The Crystal Shards [Hoshi no Kirby 64 (J)]
     MATCH_ID_REGION_VERSION("NK4J", 1, SAVE_TYPE_SRAM_256KBIT, FEAT_RPAK),                                      // Kirby 64: The Crystal Shards [Hoshi no Kirby 64 (J)]
     MATCH_ID("NK4", SAVE_TYPE_EEPROM_4KBIT, FEAT_RPAK),                                                         // Kirby 64: The Crystal Shards [Hoshi no Kirby 64 (J)]
@@ -260,7 +264,6 @@ static const match_t database[] = {
     MATCH_ID("ND2", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK),                                                        // Doraemon 2: Nobita to Hikari no Shinden
     MATCH_ID("ND6", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK | FEAT_VRU),                                             // Densha de Go! 64
     MATCH_ID("NDO", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK | FEAT_EXP_PAK_REQUIRED),                                // Donkey Kong 64
-    MATCH_ID("NED", SAVE_TYPE_EEPROM_16KBIT, FEAT_CPAK | FEAT_RPAK | FEAT_EXP_PAK_REQUIRED),                    // Mario Kart 64: Amped Up
     MATCH_ID("NEP", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK | FEAT_EXP_PAK_ENHANCED),                                // Star Wars Episode I: Racer
     MATCH_ID("NEV", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK),                                                        // Neon Genesis Evangelion
     MATCH_ID("NFU", SAVE_TYPE_EEPROM_16KBIT, FEAT_RPAK),                                                        // Conker's Bad Fur Day
@@ -1032,6 +1035,7 @@ rom_err_t rom_config_load (path_t *path, rom_info_t *rom_info) {
 
     return ROM_OK;
 }
+
 
 
 
