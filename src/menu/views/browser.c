@@ -51,8 +51,8 @@ static const struct substr hidden_basenames[] = {
     substr("desktop.ini"), // Windows Explorer settings
     substr("Thumbs.db"),   // Windows Explorer thumbnails
     substr(".DS_Store"),   // macOS Finder settings
-    subdtr(".ini"),        // Misc configuration files
-    subdtr("datel.txt"),   // Cheat files
+    substr(".ini"),        // Misc configuration files
+    substr("datel.txt"),   // Cheat files
 };
 #define HIDDEN_BASENAMES_COUNT (sizeof(hidden_basenames) / sizeof(hidden_basenames[0]))
 
