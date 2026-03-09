@@ -59,6 +59,12 @@ static const struct substr hidden_prefixes[] = {
 };
 #define HIDDEN_PREFIXES_COUNT (sizeof(hidden_prefixes) / sizeof(hidden_prefixes[0]))
 
+static const struct substr hidden_suffixes[] = {
+    substr("ini"),       // Configuration files
+    substr("datel.txt"), // Old cheat file
+    substr("datel"),     // Cheat file
+};
+#define HIDDEN_SUFFIXES_COUNT (sizeof(hidden_suffixes) / sizeof(hidden_suffixes[0]))
 
 static bool path_is_hidden (path_t *path) {
     char *stripped_path = strip_fs_prefix(path_get(path));
@@ -84,6 +90,13 @@ static bool path_is_hidden (path_t *path) {
     for (size_t i = 0; i < HIDDEN_PREFIXES_COUNT; i++) {
         if (basename_len > hidden_prefixes[i].len &&
             strncmp(basename, hidden_prefixes[i].str, hidden_prefixes[i].len) == 0) {
+            return true;
+        }
+    }
+    // Check for hidden files based on filename suffix
+    for (size_t i = 0; i < HIDDEN_SUFFIXES_COUNT; i++) {
+        if (basename_len > hidden_suffixes[i].len &&
+            strncmp(basename, hidden_suffixes[i].str, hidden_suffixes[i].len) == 0) {
             return true;
         }
     }
