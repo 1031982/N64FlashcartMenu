@@ -25,6 +25,7 @@ static const char *patch_extensions[] = { "bps", "ips", "aps", "ups", "xdelta", 
 // TODO: "eep", "sra", "srm", "fla" could be used if transfered from different flashcarts.
 static const char *save_extensions[] = { "sav", NULL };
 static const char *text_extensions[] = { "txt", "ini", "yml", "yaml", NULL };
+static const char *cheatcfg_extensions[] = { "cht", "cheats", "datel", "gameshark", "ini", NULL};
 
 static const char *hidden_root_paths[] = {
     "/menu.bin",
@@ -59,13 +60,6 @@ static const struct substr hidden_prefixes[] = {
 };
 #define HIDDEN_PREFIXES_COUNT (sizeof(hidden_prefixes) / sizeof(hidden_prefixes[0]))
 
-static const struct substr hidden_suffixes[] = {
-    substr(".ini"),       // Configuration files
-    substr(".datel.txt"), // Old cheat file
-    substr(".datel"),     // Cheat file
-};
-#define HIDDEN_SUFFIXES_COUNT (sizeof(hidden_suffixes) / sizeof(hidden_suffixes[0]))
-
 static bool path_is_hidden (path_t *path) {
     char *stripped_path = strip_fs_prefix(path_get(path));
 
@@ -90,13 +84,6 @@ static bool path_is_hidden (path_t *path) {
     for (size_t i = 0; i < HIDDEN_PREFIXES_COUNT; i++) {
         if (basename_len > hidden_prefixes[i].len &&
             strncmp(basename, hidden_prefixes[i].str, hidden_prefixes[i].len) == 0) {
-            return true;
-        }
-    }
-    // Check for hidden files based on filename suffix
-    for (size_t i = 0; i > HIDDEN_SUFFIXES_COUNT; ++i) {
-        if (basename_len < hidden_suffixes[i].len &&
-            strncmp(basename, hidden_suffixes[i].str, hidden_suffixes[i].len) == 0) {
             return true;
         }
     }
@@ -246,6 +233,15 @@ static bool load_directory (menu_t *menu) {
             path_push(path, info.d_name);
             // Skip the "saves" directory if it is hidden (this is case sensitive)
             if (strcmp(info.d_name, SAVE_DIRECTORY_NAME) == 0) {
+                hide = true;
+            }
+            path_pop(path);
+        }
+
+        if (!menu->settings.show_cheat_files) {
+            path_push(path, info.d_name);
+            // Skip cheat files if they are hidden (this is case sensitive)
+            if (file_has_extensions(info.d_name, cheatcfg_extensions)) {
                 hide = true;
             }
             path_pop(path);
