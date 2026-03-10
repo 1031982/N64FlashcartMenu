@@ -25,7 +25,7 @@ static const char *patch_extensions[] = { "bps", "ips", "aps", "ups", "xdelta", 
 // TODO: "eep", "sra", "srm", "fla" could be used if transfered from different flashcarts.
 static const char *save_extensions[] = { "sav", NULL };
 static const char *text_extensions[] = { "txt", "ini", "yml", "yaml", NULL };
-static const char *cheatcfg_extensions[] = { "cht", "cheats", "datel", "datel.txt", "gameshark", "ini", NULL};
+static const char *cheatcfg_extensions[] = { "cht", "cheats", "datel", "gameshark", "ini", NULL};
 
 static const char *hidden_root_paths[] = {
     "/menu.bin",
