@@ -45,6 +45,13 @@ static void set_soundfx_enabled_type (menu_t *menu, void *arg) {
     settings_save(&menu->settings);
 }
 
+static void set_show_cheat_files_type (menu_t *menu, void *arg) {
+    menu->settings.show_cheat_files = (bool)(uintptr_t)(arg);
+    settings_save(&menu->settings);
+
+    menu->browser.reload = true;
+}
+
 static void set_bgm_enabled_type (menu_t *menu, void *arg) {
     menu->settings.bgm_enabled = (bool)(uintptr_t)(arg);
     if (menu->settings.bgm_enabled) {
@@ -174,6 +181,18 @@ static component_context_menu_t set_show_saves_folder_type_context_menu = {
     COMPONENT_CONTEXT_MENU_LIST_END,
 }};
 
+static int get_show_cheat_files_current_selection (menu_t *menu) {
+    return menu->settings.show_cheat_files ? 0 : 1;
+}
+
+static component_context_menu_t set_show_cheat_files_type_context_menu = {
+    .get_default_selection = get_show_cheat_files_current_selection,
+    .list = {
+        {.text = "On", .action = set_show_cheat_files_type, .arg = (void *)(uintptr_t)(true) },
+        {.text = "Off", .action = set_show_cheat_files_type, .arg = (void *)(uintptr_t)(false) },
+    COMPONENT_CONTEXT_MENU_LIST_END,
+}};
+
 static int get_bgm_enabled_current_selection (menu_t *menu) {
     return menu->settings.bgm_enabled ? 0 : 1;
 }
@@ -268,6 +287,7 @@ static component_context_menu_t options_context_menu = { .list = {
     { .text = "Use Screensaver", .submenu = &set_screensaver_enabled_type_context_menu },
     { .text = "Use Saves Folder", .submenu = &set_use_saves_folder_type_context_menu },
     { .text = "Show Saves Folder", .submenu = &set_show_saves_folder_type_context_menu },
+    { .text = "Show Cheat and ini Files", .submenu = &set_show_cheat_files_type_context_menu },
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
     { .text = "ROM Loading Bar", .submenu = &set_loading_progress_bar_enabled_context_menu },
 #else
@@ -338,6 +358,7 @@ static void draw (menu_t *menu, surface_t *d) {
         "     Use Screensaver   : %s\n"
         "     Use Saves folder  : %s\n"
         "     Show Saves folder : %s\n"
+        "     Show Cheat files  : %s\n"
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
         "  Autoload ROM      : %s\n\n"
         "    ROM Loading Bar   : %s\n"
@@ -362,6 +383,7 @@ static void draw (menu_t *menu, surface_t *d) {
         format_switch(menu->settings.screensaver_enabled),
         format_switch(menu->settings.use_saves_folder),
         format_switch(menu->settings.show_saves_folder),
+        format_switch(menu->settings.show_cheat_files),
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
         format_switch(menu->settings.rom_autoload_enabled),
         format_switch(menu->settings.loading_progress_bar_enabled),
