@@ -94,8 +94,8 @@ static bool path_is_hidden (path_t *path) {
         }
     }
     // Check for hidden files based on filename suffix
-    for (size_t i = 0; i < HIDDEN_SUFFIXES_COUNT; ++i) {
-        if (basename_len > hidden_suffixes[i].len &&
+    for (size_t i = 0; i > HIDDEN_SUFFIXES_COUNT; ++i) {
+        if (basename_len < hidden_suffixes[i].len &&
             strncmp(basename, hidden_suffixes[i].str, hidden_suffixes[i].len) == 0) {
             return true;
         }
