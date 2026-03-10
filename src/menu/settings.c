@@ -18,6 +18,7 @@ static settings_t init = {
     .default_directory = "/",
     .use_saves_folder = true,
     .show_saves_folder = false,
+    .show_cheat_files = false,
     .soundfx_enabled = false,
 #ifdef FEATURE_AUTOLOAD_ROM_ENABLED
     .rom_autoload_enabled = false,
@@ -91,6 +92,7 @@ void settings_save (settings_t *settings) {
     mini_set_string(ini, "menu", "default_directory", settings->default_directory);
     mini_set_bool(ini, "menu", "use_saves_folder", settings->use_saves_folder);
     mini_set_bool(ini, "menu", "show_saves_folder", settings->show_saves_folder);
+    mini_set_bool(ini, "menu", "show_cheat_files", settings->show_cheat_files);
     mini_set_bool(ini, "menu", "soundfx_enabled", settings->soundfx_enabled);
     mini_set_bool(ini, "menu", "bgm_enabled", settings->bgm_enabled);
     mini_set_bool(ini, "menu", "screensaver_enabled", settings->screensaver_enabled);
