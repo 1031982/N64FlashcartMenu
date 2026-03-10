@@ -37,6 +37,9 @@ typedef struct {
     /** @brief Show saves folder in file browser */ 
     bool show_saves_folder;
 
+    /** @brief Show cheat files in file browser */
+    bool show_cheat_files;
+
     /** @brief Hide rom file extensions */    
     bool show_browser_file_extensions;
 
