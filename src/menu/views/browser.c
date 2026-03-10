@@ -60,9 +60,9 @@ static const struct substr hidden_prefixes[] = {
 #define HIDDEN_PREFIXES_COUNT (sizeof(hidden_prefixes) / sizeof(hidden_prefixes[0]))
 
 static const struct substr hidden_suffixes[] = {
-    substr("ini"),       // Configuration files
-    substr("datel.txt"), // Old cheat file
-    substr("datel"),     // Cheat file
+    substr(".ini"),       // Configuration files
+    substr(".datel.txt"), // Old cheat file
+    substr(".datel"),     // Cheat file
 };
 #define HIDDEN_SUFFIXES_COUNT (sizeof(hidden_suffixes) / sizeof(hidden_suffixes[0]))
 
