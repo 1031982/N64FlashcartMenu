@@ -363,9 +363,9 @@ static void draw (menu_t *menu, surface_t *d) {
         "  Autoload ROM      : %s\n\n"
         "    ROM Loading Bar   : %s\n"
 #else
-        "     Fast Reboot ROM   : %s\n"
+        "     Fast Reboot ROM           : %s\n"
 #endif
-        "     Background Music  : %s\n"
+        "     Background Music          : %s\n"
 #ifdef BETA_SETTINGS
         "*    PAL60 Mode        : %s\n"
         "*    PAL60 Mod Compat  : %s\n"
